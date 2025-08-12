@@ -1,103 +1,121 @@
-import Image from "next/image";
+'use client';
+
+import Image from 'next/image';
+import { useState } from 'react';
+import { setMyCookies } from '@/lib/cookie';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLoading, setIsLoading] = useState(false);
+  const [ email, setEmail ] = useState<string>("");
+  const [ password, setPassword ] = useState<string>("");
+  const router = useRouter();
+ 
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    console.log("This is the Email: ", email);
+    console.log("This is the password: ", password)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    try {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      email: `${email}`,
+      password: `${password}`
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw
+    };
+
+    const response = await fetch("https://client-api.bhindi.io/api/auth/login", requestOptions)
+    const { data } = await response.json();
+    
+    if ( response.ok ) setMyCookies(data.token, data.user._id, data.user.userId, data.user.username)
+    else throw new Error("Having toruble Login")
+
+    router.push('/webhook');
+
+  } catch (error) {
+    toast.error("Cannot LogIn", {
+      description: error instanceof Error ? error.message : String(error),
+    })
+  } finally {
+    setIsLoading(false)
+  }
+  };
+
+  return (
+    <div className="min-h-screen bg-white text-black dark:bg-[#0B0B0B] dark:text-white flex items-center justify-center p-6">
+      <div className="w-full max-w-[420px]">
+
+        <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0F0F0F] shadow-[0_1px_0_0_rgba(0,0,0,0.04)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.06)]">
+        <div className='flex justify-center mt-8'>
+        <Image src={"https://bhindi.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fbhindi-logo.276b81a5.png&w=256&q=75&dpl=dpl_DJEbFJDgYsC7t5xdfcTS9e1fih71"} 
+            alt='Bhindi Logo'
+            height={256}
+            width={256}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            </div>
+          <div className="p-6 sm:p-8">
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="email"
+                  className="text-sm font-medium text-black/80 dark:text-white/80"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="Your Email"
+                  className="w-full h-10 rounded-lg border border-black/10 dark:border-white/15 bg-white dark:bg-[#111] px-3 text-sm outline-none focus:ring-2 ring-black/10 dark:ring-white/15 transition-shadow"
+                  onChange={(e)=>setEmail(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-black/80 dark:text-white/80"
+                  >
+                    Password
+                  </label>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  className="w-full h-10 rounded-lg border border-black/10 dark:border-white/15 bg-white dark:bg-[#111] px-3 text-sm outline-none focus:ring-2 ring-black/10 dark:ring-white/15 transition-shadow"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-10 rounded-lg bg-black text-white dark:bg-white dark:text-black font-medium text-sm hover:opacity-90 disabled:opacity-60 transition-opacity"
+              >
+                {isLoading ? 'Signing in...' : 'Sign in'}
+              </button>
+            </form>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      </div>
     </div>
   );
 }
