@@ -113,7 +113,7 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
-          <div className="bg-gradient-to-br from-[#1a1a1c] to-[#16161a] rounded-3xl border border-[#2a2a2e]/60 max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl shadow-black/40">
+          <div className="bg-gradient-to-br from-[#1a1a1c] to-[#16161a] rounded-3xl border border-[#2a2a2e]/60 max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl shadow-black/40 overflow-hidden">
             <div className="flex justify-between items-start gap-4 p-8 border-b border-[#2a2a2e]/40">
               <div className="flex-1 min-w-0">
                 <h2 className="text-2xl font-bold text-[#f8fafc] mb-2 break-words leading-tight">
@@ -137,7 +137,7 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 space-y-8">
               {prompt && (
                 <div>
                   <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
@@ -158,14 +158,16 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
                     <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
                     Additional Context ({contextCount})
                   </h3>
-                  <div className="grid gap-3">
+                  <div className="space-y-3">
                     {additionalContext.map((ctx, i) => (
-                      <div key={i} className="bg-[#1e1e20]/80 rounded-lg p-4 border border-[#2a2a2e]/40">
-                        <h4 className="font-semibold text-[#00d68f] text-sm mb-2 break-words flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-[#00d68f] rounded-full"></div>
-                          {ctx.label}
+                      <div key={i} className="bg-[#1e1e20]/80 rounded-lg p-4 border border-[#2a2a2e]/40 overflow-hidden">
+                        <h4 className="font-semibold text-[#00d68f] text-sm mb-2 flex items-center gap-2 overflow-hidden">
+                          <div className="w-1.5 h-1.5 bg-[#00d68f] rounded-full flex-shrink-0"></div>
+                          <span className="truncate">{ctx.label}</span>
                         </h4>
-                        <p className="text-[#d1d5db] text-sm leading-relaxed break-words">{ctx.content}</p>
+                        <p className="text-[#d1d5db] text-sm leading-relaxed break-words overflow-wrap-anywhere hyphens-auto">
+                          {ctx.content}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -177,16 +179,12 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
                   <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
                   Metadata
                 </h3>
-                <div className="bg-[#1e1e20]/80 rounded-xl p-6 border border-[#2a2a2e]/40">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Webhook ID</p>
-                      <p className="text-[#f8fafc] font-mono text-sm break-all bg-[#0a0a0a]/50 p-3 rounded-lg border border-[#2a2a2e]/40">{id}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Created</p>
-                      <p className="text-[#f8fafc] text-sm bg-[#0a0a0a]/50 p-3 rounded-lg border border-[#2a2a2e]/40">{creationDate}</p>
-                    </div>
+                <div className="bg-[#1e1e20]/80 rounded-xl p-6 border border-[#2a2a2e]/40 overflow-hidden">
+                  <div>
+                    <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Webhook ID</p>
+                    <p className="text-[#f8fafc] font-mono text-sm bg-[#0a0a0a]/50 p-3 rounded-lg border border-[#2a2a2e]/40 overflow-hidden break-all">
+                      {id}
+                    </p>
                   </div>
                 </div>
               </div>
