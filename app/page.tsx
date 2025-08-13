@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { setMyCookies } from '@/lib/cookie';
+import { setMyCookies } from '@/lib/cookies/cookie';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
