@@ -25,6 +25,7 @@ const WebHooksPage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [triggers, setTriggers] = useState<Webhook[]>([]);
   const [loadingTriggers, setLoadingTriggers] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,9 +71,20 @@ const WebHooksPage = () => {
     setAdditionalContext(additionalContext.filter((_, i) => i !== index));
 
   const handleCreate = async () => {
+    if (!title.trim()) {
+      alert("Please enter a webhook title");
+      return;
+    }
+
+    if (webhookType === "Textbased" && !prompt.trim()) {
+      alert("Please enter a prompt for text-based webhook");
+      return;
+    }
+
     try {
       if (!userId) throw new Error("No userId set");
 
+      setIsCreating(true);
       await createWebHook(title, prompt, userId, additionalContext, webhookType);
 
       alert("Webhook created successfully!");
@@ -89,29 +101,45 @@ const WebHooksPage = () => {
     } catch (err) {
       console.error(err);
       alert("Error creating webhook");
+    } finally {
+      setIsCreating(false);
     }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setPrompt("");
+    setAdditionalContext([]);
+    setWebhookType("Dynamic");
+    setDropdownOpen(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    resetForm();
   };
 
   return (
     <div className="h-screen bg-[#1c1c1e] text-white font-sans flex flex-col">
-      <div className="flex items-center justify-between border-b border-[#2f2f31] px-6 py-4 bg-[#1c1c1e]/80">
-        <h1 className="text-2xl font-semibold">Webhooks</h1>
+      <div className="flex items-center justify-between border-b border-[#2f2f31] px-4 sm:px-6 py-3 sm:py-4 bg-[#1c1c1e]/80">
+        <h1 className="text-xl sm:text-2xl font-semibold">Webhooks</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-[#00c584] hover:bg-[#00a870] text-white font-semibold py-2 px-5 rounded-lg shadow-md"
+          className="bg-[#00c584] hover:bg-[#00a870] text-white font-semibold py-2 px-3 sm:px-5 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 text-sm sm:text-base"
         >
-          + Create Webhook
+          <span className="hidden sm:inline">+ Create Webhook</span>
+          <span className="sm:hidden">+ Create</span>
         </button>
       </div>
 
-      <div className="flex-1 p-6 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">All Webhooks</h2>
+      <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">All Webhooks</h2>
         {loadingTriggers ? (
           <p className="text-gray-400">Loading...</p>
         ) : triggers.length === 0 ? (
           <p className="text-gray-500">No webhooks found. Create one to get started.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {triggers.map((trigger) => (
               <WebhookCard key={trigger.id} trigger={trigger} />
             ))}
@@ -119,124 +147,202 @@ const WebHooksPage = () => {
         )}
       </div>
 
+      {/* Enhanced Modal - Mobile Optimized */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 backdrop-blur">
-          <div className="bg-[#2c2c2e] p-8 rounded-xl w-full max-w-2xl shadow-xl border border-[#3a3a3c] animate-fadeIn">
-            <div className="flex justify-between items-center mb-6 border-b border-[#3a3a3c] pb-3">
-              <h3 className="text-xl font-semibold">Create Webhook</h3>
-              <button
-                onClick={() => setShowModal(false)}
-                aria-label="Close"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/50 hover:text-white/80"
-              >
-                ✕
-              </button>
-            </div>
-
-            <label className="block text-sm text-gray-300 mb-1">Webhook Type</label>
-            <div className="relative mb-6" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full px-4 py-2 bg-[#1c1c1e] border border-[#3a3a3c] rounded-md flex justify-between items-center hover:border-[#00c584]"
-              >
-                <span>{webhookType === "Dynamic" ? "Dynamic Prompt" : "Dynamic Text"}</span>
-                <span>▾</span>
-              </button>
-              {dropdownOpen && (
-                <div className="absolute mt-1 w-full bg-[#1c1c1e] border border-[#3a3a3c] rounded-md shadow-lg overflow-hidden">
-                  {[
-                    { label: "Dynamic Prompt", value: "Dynamic" as const },
-                    { label: "Dynamic Text", value: "Textbased" as const },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      className={`w-full text-left px-4 py-2 hover:bg-[#00c584] hover:text-black ${
-                        webhookType === option.value ? "bg-white/5" : ""
-                      }`}
-                      onClick={() => {
-                        setWebhookType(option.value);
-                        setDropdownOpen(false);
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-gradient-to-br from-[#2c2c2e] to-[#1e1e20] rounded-xl sm:rounded-2xl w-full max-w-2xl sm:max-w-3xl shadow-2xl border border-[#3a3a3c]/50 animate-in fade-in zoom-in duration-300 max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header - More Compact */}
+            <div className="bg-gradient-to-r from-[#00c584]/10 to-transparent p-4 sm:p-6 border-b border-[#3a3a3c]/30 flex-shrink-0">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg sm:text-2xl font-bold text-white">Create Webhook</h3>
+                  <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">Set up your webhook configuration</p>
                 </div>
-              )}
-            </div>
-
-            <label className="block text-sm text-gray-300 mb-1">Title</label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Webhook title"
-              className="w-full mb-6 px-3 py-2 bg-[#1c1c1e] border border-[#3a3a3c] rounded-md"
-            />
-
-            {webhookType === "Textbased" && (
-              <>
-                <label className="block text-sm text-gray-300 mb-1">Prompt</label>
-                <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Enter prompt..."
-                  className="w-full mb-6 px-3 py-2 bg-[#1c1c1e] border border-[#3a3a3c] rounded-md min-h-[96px]"
-                />
-              </>
-            )}
-
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-3">
-                <label className="block text-sm text-gray-300">Additional Context</label>
                 <button
-                  onClick={addContextField}
-                  className="text-[#00c584] text-sm hover:underline"
+                  onClick={handleCloseModal}
+                  disabled={isCreating}
+                  className="h-8 w-8 sm:h-10 sm:w-10 flex items-center justify-center rounded-lg sm:rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200 group disabled:opacity-50"
                 >
-                  + Add Context
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
-              <div className="space-y-3">
-                {additionalContext.map((ctx, index) => (
-                  <div key={index} className="flex gap-3">
-                    <input
-                      value={ctx.label}
-                      onChange={(e) => updateContextField(index, "label", e.target.value)}
-                      placeholder="Label"
-                      className="w-1/3 px-3 py-2 bg-[#1c1c1e] border border-[#3a3a3c] rounded-md"
-                    />
-                    <textarea
-                      value={ctx.content}
-                      onChange={(e) => updateContextField(index, "content", e.target.value)}
-                      placeholder="Content"
-                      className="w-2/3 px-3 py-2 bg-[#1c1c1e] border border-[#3a3a3c] rounded-md min-h-[60px]"
-                    />
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-sm font-medium text-gray-200">
+                    Webhook Type <span className="text-gray-400">*</span>
+                  </label>
+                  <div className="relative" ref={dropdownRef}>
                     <button
-                      onClick={() => removeContextField(index)}
-                      className="h-10 w-10 flex items-center justify-center rounded-md text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                      aria-label="Remove"
+                      type="button"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      disabled={isCreating}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1c1c1e] border border-[#3a3a3c] rounded-lg sm:rounded-xl flex justify-between items-center hover:border-[#00c584]/50 transition-all duration-200 focus:border-[#00c584] focus:ring-2 focus:ring-[#00c584]/20 disabled:opacity-50 text-sm sm:text-base"
                     >
-                      ✕
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${webhookType === "Dynamic" ? "bg-blue-500" : "bg-purple-500"}`} />
+                        <span className="text-white">{webhookType === "Dynamic" ? "Dynamic" : "Text-based"}</span>
+                      </div>
+                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {dropdownOpen && (
+                      <div className="absolute mt-2 w-full bg-[#1c1c1e] border border-[#3a3a3c] rounded-lg sm:rounded-xl shadow-2xl overflow-hidden z-10 animate-in fade-in slide-in-from-top-2 duration-200">
+                        {[
+                          { label: "Dynamic Prompt", value: "Dynamic" as const, description: "Flexible prompt-based webhook" },
+                          { label: "Text-based Webhook", value: "Textbased" as const, description: "Static text content webhook" },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-[#00c584]/10 transition-all duration-200 border-b border-[#3a3a3c]/30 last:border-b-0 ${
+                              webhookType === option.value ? "bg-[#00c584]/5 border-r-2 border-r-[#00c584]" : ""
+                            }`}
+                            onClick={() => {
+                              setWebhookType(option.value);
+                              setDropdownOpen(false);
+                            }}
+                          >
+                            <div>
+                              <div className="text-white font-medium text-sm sm:text-base">{option.label}</div>
+                              <div className="text-gray-400 text-xs mt-0.5 hidden sm:block">{option.description}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2 sm:space-y-3">
+                  <label className="block text-sm font-medium text-gray-200">
+                    Title <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter webhook title"
+                    disabled={isCreating}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1c1c1e] border border-[#3a3a3c] rounded-lg sm:rounded-xl text-white placeholder-gray-500 focus:border-[#00c584] focus:ring-2 focus:ring-[#00c584]/20 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                  />
+                </div>
+
+                {webhookType === "Textbased" && (
+                  <div className="space-y-2 sm:space-y-3">
+                    <label className="block text-sm font-medium text-gray-200">
+                      Prompt <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder="Enter your webhook prompt..."
+                      disabled={isCreating}
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-[#1c1c1e] border border-[#3a3a3c] rounded-lg sm:rounded-xl text-white placeholder-gray-500 focus:border-[#00c584] focus:ring-2 focus:ring-[#00c584]/20 transition-all duration-200 min-h-[80px] sm:min-h-[100px] resize-y disabled:opacity-50 text-sm sm:text-base"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-200">Additional Context</label>
+                      <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Add extra context or variables</p>
+                    </div>
+                    <button
+                      onClick={addContextField}
+                      disabled={isCreating}
+                      className="bg-[#00c584]/10 hover:bg-[#00c584]/20 text-[#00c584] px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border border-[#00c584]/30 hover:border-[#00c584]/50 disabled:opacity-50"
+                    >
+                      + Add
                     </button>
                   </div>
-                ))}
+                  
+                  <div className="space-y-2 sm:space-y-3">
+                    {additionalContext.map((ctx, index) => (
+                      <div key={index} className="bg-[#1a1a1c] p-2.5 sm:p-3 rounded-lg border border-[#2f2f31] animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs font-medium text-gray-300">Context #{index + 1}</span>
+                          <button
+                            onClick={() => removeContextField(index)}
+                            disabled={isCreating}
+                            className="h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center rounded text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-all duration-200 disabled:opacity-50"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="space-y-2 sm:grid sm:grid-cols-3 sm:gap-2 sm:space-y-0">
+                          <input
+                            value={ctx.label}
+                            onChange={(e) => updateContextField(index, "label", e.target.value)}
+                            placeholder="Label"
+                            disabled={isCreating}
+                            className="w-full px-2.5 py-2 bg-[#0f0f10] border border-[#3a3a3c] rounded text-xs sm:text-sm text-white placeholder-gray-500 focus:border-[#00c584] focus:ring-1 focus:ring-[#00c584]/20 transition-all duration-200 disabled:opacity-50"
+                          />
+                          <textarea
+                            value={ctx.content}
+                            onChange={(e) => updateContextField(index, "content", e.target.value)}
+                            placeholder="Content..."
+                            disabled={isCreating}
+                            className="w-full sm:col-span-2 px-2.5 py-2 bg-[#0f0f10] border border-[#3a3a3c] rounded text-xs sm:text-sm text-white placeholder-gray-500 focus:border-[#00c584] focus:ring-1 focus:ring-[#00c584]/20 transition-all duration-200 min-h-[50px] sm:min-h-[60px] resize-y disabled:opacity-50"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {additionalContext.length === 0 && (
+                      <div className="text-center py-4 sm:py-6 text-gray-500">
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 4v16l5-3 5 3V4H7z" />
+                        </svg>
+                        <p className="text-xs sm:text-sm">No additional context added yet</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 bg-white/5 hover:bg-white/10 text-white py-2 px-4 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                className="flex-1 bg-[#00c584] hover:bg-[#00a870] py-2 px-4 rounded-lg font-semibold shadow-md"
-              >
-                Create Webhook
-              </button>
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-[#1a1a1c] to-[#1c1c1e] border-t border-[#3a3a3c]/30 flex-shrink-0">
+              <div className="flex gap-2 sm:gap-3">
+                <button
+                  onClick={handleCloseModal}
+                  disabled={isCreating}
+                  className="flex-1 bg-white/5 hover:bg-white/10 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl font-medium transition-all duration-200 border border-white/10 hover:border-white/20 disabled:opacity-50 text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreate}
+                  disabled={isCreating || !title.trim() || (webhookType === "Textbased" && !prompt.trim())}
+                  className="flex-1 bg-gradient-to-r from-[#00c584] to-[#00a870] hover:from-[#00a870] hover:to-[#009660] text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base"
+                >
+                  {isCreating ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="hidden sm:inline">Creating...</span>
+                      <span className="sm:hidden">...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      <span className="hidden sm:inline">Create Webhook</span>
+                      <span className="sm:hidden">Create</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
