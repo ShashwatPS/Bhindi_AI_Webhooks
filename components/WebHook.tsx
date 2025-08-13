@@ -16,19 +16,19 @@ type WebhookCardProps = {
 };
 
 const ExpandIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7V4a1 1 0 011-1h3m0 0l-3 3m3-3v0M21 7V4a1 1 0 00-1-1h-3m0 0l3 3m-3-3v0M3 17v3a1 1 0 001 1h3m0 0l-3-3m3 3v0M21 17v3a1 1 0 01-1 1h-3m0 0l3-3m-3 3v0" />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
   </svg>
 );
 
 const DeleteIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
   </svg>
 );
 
 const CloseIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
@@ -43,108 +43,108 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
 
   return (
     <>
-      {/* Card (same as before) */}
-      <div className="bg-[#1e1e20] p-5 rounded-xl border border-[#2e2e32] h-64 flex flex-col justify-between hover:border-[#00d68f] transition-colors duration-200">
-        <div className="flex flex-col overflow-hidden">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="font-semibold text-lg text-[#f8fafc] truncate pr-2 flex-1">
+      <div className="group relative bg-gradient-to-br from-[#1a1a1c] to-[#16161a] p-6 rounded-2xl border border-[#2a2a2e]/60 hover:border-[#00d68f]/40 transition-all duration-300 hover:shadow-lg hover:shadow-[#00d68f]/10 backdrop-blur-sm h-72">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1 min-w-0 pr-4">
+            <h3 className="font-semibold text-xl text-[#f8fafc] truncate leading-tight">
               {title}
             </h3>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-300 transition-all duration-200 group"
-                title="Expand details"
-              >
-                <ExpandIcon />
-              </button>
-
-              <button
-                onClick={() => onDelete(id)}
-                className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all duration-200 group"
-                title="Delete webhook"
-              >
-                <DeleteIcon />
-              </button>
-
-              <span className="text-xs px-3 py-1 rounded-full bg-[#00d68f]/20 text-[#00d68f] flex-shrink-0 font-medium">
+            <div className="flex items-center gap-2 mt-2">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#00d68f]/15 text-[#00d68f] border border-[#00d68f]/20">
                 {type}
+              </span>
+              <span className="text-xs text-[#a1a1aa] bg-[#2a2a2e]/50 px-2 py-1 rounded-md">
+                {contextCount} context{contextCount !== 1 ? 's' : ''}
               </span>
             </div>
           </div>
 
-          <hr className="border-t border-[#323236] mb-3" />
-
-          <div className="space-y-4 overflow-y-auto pr-1 flex-1">
-            {prompt && (
-              <div>
-                <p className="text-xs text-[#a1a1aa] mb-1 font-medium">Prompt:</p>
-                <p className="text-[#d1d5db] text-sm line-clamp-3 leading-relaxed">{prompt}</p>
-              </div>
-            )}
-
-            {contextCount > 0 && (
-              <div>
-                <p className="text-xs text-[#a1a1aa] mb-1 font-medium">Additional Context:</p>
-                <div className="space-y-1">
-                  {additionalContext.map((ctx, i) => (
-                    <div key={i} className="text-xs truncate">
-                      <span className="font-semibold text-[#00d68f]">{ctx.label}:</span>
-                      <span className="text-[#d1d5db] ml-1">{ctx.content}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="flex items-center gap-2 opacity-70 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="relative">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#2a2a2e]/80 border border-[#3a3a3e]/60 text-[#9ca3af] hover:text-[#00d68f] hover:bg-[#00d68f]/10 hover:border-[#00d68f]/30 transition-all duration-200 backdrop-blur-sm"
+                title="View details"
+              >
+                <ExpandIcon />
+              </button>
+            </div>
+            
+            <div className="relative">
+              <button
+                onClick={() => onDelete(id)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#2a2a2e]/80 border border-[#3a3a3e]/60 text-[#9ca3af] hover:text-[#f87171] hover:bg-[#f87171]/10 hover:border-[#f87171]/30 transition-all duration-200 backdrop-blur-sm"
+                title="Delete webhook"
+              >
+                <DeleteIcon />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-between items-center text-xs text-[#a1a1aa] border-t border-[#323236] pt-3 mt-4">
-          <span>{creationDate}</span>
-          <span>{contextCount} Context(s)</span>
+        <div className="h-px bg-gradient-to-r from-transparent via-[#3a3a3e] to-transparent mb-4" />
+
+        <div className="space-y-4 overflow-y-auto pr-1 flex-1" style={{ maxHeight: '140px' }}>
+          {prompt && (
+            <div className="bg-[#1e1e20]/60 rounded-lg p-3 border border-[#2a2a2e]/40">
+              <p className="text-xs text-[#9ca3af] mb-1.5 font-medium uppercase tracking-wide">Prompt</p>
+              <p className="text-[#d1d5db] text-sm line-clamp-3 leading-relaxed">{prompt}</p>
+            </div>
+          )}
+
+          {contextCount > 0 && (
+            <div className="bg-[#1e1e20]/60 rounded-lg p-3 border border-[#2a2a2e]/40">
+              <p className="text-xs text-[#9ca3af] mb-2 font-medium uppercase tracking-wide">Additional Context</p>
+              <div className="space-y-2">
+                {additionalContext.slice(0, 2).map((ctx, i) => (
+                  <div key={i} className="text-xs">
+                    <span className="font-semibold text-[#00d68f]">{ctx.label}:</span>
+                    <span className="text-[#d1d5db] ml-1 truncate block">{ctx.content}</span>
+                  </div>
+                ))}
+                {contextCount > 2 && (
+                  <p className="text-xs text-[#9ca3af] italic">+{contextCount - 2} more...</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-[#1e1e20] rounded-2xl border border-[#2e2e32] max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl">
-            <div className="flex justify-between items-start gap-4 p-6 border-b border-[#323236] min-h-0">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
+          <div className="bg-gradient-to-br from-[#1a1a1c] to-[#16161a] rounded-3xl border border-[#2a2a2e]/60 max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl shadow-black/40">
+            <div className="flex justify-between items-start gap-4 p-8 border-b border-[#2a2a2e]/40">
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-[#f8fafc] mb-1 break-words leading-tight">
+                <h2 className="text-2xl font-bold text-[#f8fafc] mb-2 break-words leading-tight">
                   {title}
                 </h2>
-                <p className="text-sm text-[#a1a1aa]">Complete webhook information</p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-lg hover:bg-[#2e2e32] text-[#a1a1aa] hover:text-white transition-all duration-200 flex-shrink-0"
-                title="Close modal"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-[#00d68f] mb-2 uppercase tracking-wide">Title</h3>
-                  <p className="text-[#f8fafc] text-base font-medium break-words leading-relaxed">
-                    {title}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-[#00d68f] mb-2 uppercase tracking-wide">Type</h3>
-                  <span className="inline-block px-3 py-1 rounded-full bg-[#00d68f]/20 text-[#00d68f] text-sm font-medium">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-[#00d68f]/15 text-[#00d68f] border border-[#00d68f]/20">
                     {type}
                   </span>
+                  <p className="text-sm text-[#9ca3af]">Complete webhook details</p>
                 </div>
               </div>
+              <div className="relative">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#2a2a2e]/80 border border-[#3a3a3e]/60 text-[#9ca3af] hover:text-[#f8fafc] hover:bg-[#3a3a3e] transition-all duration-200"
+                  title="Close modal"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+            </div>
 
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
               {prompt && (
                 <div>
-                  <h3 className="text-sm font-semibold text-[#00d68f] mb-3 uppercase tracking-wide">Prompt</h3>
-                  <div className="bg-[#2a2a2e] rounded-lg p-4 border border-[#323236]">
+                  <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
+                    <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
+                    Prompt
+                  </h3>
+                  <div className="bg-[#1e1e20]/80 rounded-xl p-6 border border-[#2a2a2e]/40">
                     <p className="text-[#d1d5db] leading-relaxed whitespace-pre-wrap break-words">
                       {prompt}
                     </p>
@@ -154,16 +154,18 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
 
               {contextCount > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-[#00d68f] mb-3 uppercase tracking-wide">
+                  <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
+                    <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
                     Additional Context ({contextCount})
                   </h3>
-                  <div className="space-y-3">
+                  <div className="grid gap-3">
                     {additionalContext.map((ctx, i) => (
-                      <div key={i} className="bg-[#2a2a2e] rounded-lg p-4 border border-[#323236]">
-                        <h4 className="font-semibold text-[#00d68f] text-sm mb-2 break-words">
+                      <div key={i} className="bg-[#1e1e20]/80 rounded-lg p-4 border border-[#2a2a2e]/40">
+                        <h4 className="font-semibold text-[#00d68f] text-sm mb-2 break-words flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-[#00d68f] rounded-full"></div>
                           {ctx.label}
                         </h4>
-                        <p className="text-[#d1d5db] leading-relaxed break-words">{ctx.content}</p>
+                        <p className="text-[#d1d5db] text-sm leading-relaxed break-words">{ctx.content}</p>
                       </div>
                     ))}
                   </div>
@@ -171,30 +173,32 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
               )}
 
               <div>
-                <h3 className="text-sm font-semibold text-[#00d68f] mb-3 uppercase tracking-wide">Metadata</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-[#2a2a2e] rounded-lg p-4 border border-[#323236]">
-                    <p className="text-xs text-[#a1a1aa] mb-1">Created Date</p>
-                    <p className="text-[#f8fafc] font-medium">{creationDate}</p>
-                  </div>
-                  <div className="bg-[#2a2a2e] rounded-lg p-4 border border-[#323236] min-w-0">
-                    <p className="text-xs text-[#a1a1aa] mb-1">Webhook ID</p>
-                    <p className="text-[#f8fafc] font-mono text-sm break-all">{id}</p>
+                <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
+                  <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
+                  Metadata
+                </h3>
+                <div className="bg-[#1e1e20]/80 rounded-xl p-6 border border-[#2a2a2e]/40">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Webhook ID</p>
+                      <p className="text-[#f8fafc] font-mono text-sm break-all bg-[#0a0a0a]/50 p-3 rounded-lg border border-[#2a2a2e]/40">{id}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Created</p>
+                      <p className="text-[#f8fafc] text-sm bg-[#0a0a0a]/50 p-3 rounded-lg border border-[#2a2a2e]/40">{creationDate}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-[#323236] p-6">
-              <div className="flex justify-between items-center">
-                <p className="text-xs text-[#a1a1aa]">
-                  Last updated: {creationDate}
-                </p>
+            <div className="border-t border-[#2a2a2e]/40 p-6">
+              <div className="flex justify-end">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-[#00d68f] text-black rounded-lg hover:bg-[#00d68f]/90 transition-colors duration-200 font-medium"
+                  className="px-6 py-3 bg-gradient-to-r from-[#00d68f] to-[#00c578] text-black rounded-xl hover:from-[#00c578] hover:to-[#00b569] transition-all duration-200 font-medium shadow-lg shadow-[#00d68f]/20"
                 >
-                  Close
+                  Close Details
                 </button>
               </div>
             </div>
