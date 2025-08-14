@@ -33,6 +33,6 @@ model triggerRun {
     id        String   @id @default(uuid())
     createdAt DateTime @default(now())
     triggerId String
-    trigger   trigger  @relation(fields: [triggerId], references: [id])
+    trigger   trigger  @relation(fields: [triggerId], references: [id], onDelete: Cascade)
     metadata  Json
 }

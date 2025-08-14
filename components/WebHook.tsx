@@ -13,7 +13,7 @@ type Webhook = {
 
 type WebhookCardProps = {
   trigger: Webhook;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void; 
 };
 
 const ExpandIcon = () => (
@@ -186,7 +186,7 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
             
             <div className="relative">
               <button
-                onClick={() => onDelete(id)}
+                onClick={async() => await onDelete(id)}
                 className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#2a2a2e]/80 border border-[#3a3a3e]/60 text-[#9ca3af] hover:text-[#f87171] hover:bg-[#f87171]/10 hover:border-[#f87171]/30 transition-all duration-200 backdrop-blur-sm"
                 title="Delete webhook"
               >

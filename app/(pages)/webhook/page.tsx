@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { createWebHook, getAllTriggers } from "@/lib/api/createWeebhook";
+import { createWebHook, getAllTriggers, deleteWebHook } from "@/lib/api/createWeebhook";
 import getUserIdFromCookies from "@/lib/cookies/getUserIdCookie";
 import WebhookCard from "@/components/WebHook";
+import { toast } from "sonner";
 
 type AdditionalContextItem = { label: string; content: string };
 type Webhook = {
@@ -28,6 +29,16 @@ const WebHooksPage = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const onDelete = async (triggerId: string) => {
+    try {
+    await deleteWebHook(triggerId)
+    setTriggers(triggers.filter(({id})=>(id !== triggerId)))
+    toast.message("Webhook Deleted Succesfully")
+    } catch (error) {
+      toast.error(error)
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -142,7 +153,7 @@ const WebHooksPage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {triggers.map((trigger) => (
-              <WebhookCard key={trigger.id} trigger={trigger} />
+              <WebhookCard key={trigger.id} trigger={trigger} onDelete={onDelete}/>
             ))}
           </div>
         )}

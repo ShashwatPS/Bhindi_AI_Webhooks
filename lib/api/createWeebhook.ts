@@ -31,6 +31,18 @@ export const createWebHook = async (
     }
 };
 
+export const deleteWebHook = async (id: string) => {
+  try {
+    const deletedTrigger = await pClient.trigger.delete({
+      where: { id },
+    });
+    return deletedTrigger;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Having trouble deleting the webhook");
+  }
+};
+
 export const getWebHook = async (id: string) => {
     try {
       const trigger = await pClient.trigger.findUnique({
