@@ -84,12 +84,12 @@ const WebHooksPage = () => {
 
   const handleCreate = async () => {
     if (!title.trim()) {
-      alert("Please enter a webhook title");
+      toast.message("Please enter a webhook title");
       return;
     }
 
     if (webhookType === "Textbased" && !prompt.trim()) {
-      alert("Please enter a prompt for text-based webhook");
+      toast.message("Please enter a prompt for text-based webhook");
       return;
     }
 
@@ -99,7 +99,7 @@ const WebHooksPage = () => {
       setIsCreating(true);
       await createWebHook(title, prompt, userId, additionalContext, webhookType);
 
-      alert("Webhook created successfully!");
+      toast.message("Webhook created successfully!");
       setShowModal(false);
       setTitle("");
       setPrompt("");
@@ -111,8 +111,7 @@ const WebHooksPage = () => {
       setTriggers(data);
       setLoadingTriggers(false);
     } catch (err) {
-      console.error(err);
-      alert("Error creating webhook");
+      toast.error("Error creating webhook");
     } finally {
       setIsCreating(false);
     }
