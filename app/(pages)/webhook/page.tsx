@@ -260,7 +260,7 @@ const WebHooksPage = () => {
                       <div className="absolute mt-2 w-full bg-[#1c1c1e] border border-[#3a3a3c] rounded-lg sm:rounded-xl shadow-2xl overflow-hidden z-10 animate-in fade-in slide-in-from-top-2 duration-200">
                         {[
                           { label: "Dynamic Prompt", value: "Dynamic" as const, description: "Flexible prompt-based webhook" },
-                          { label: "Text-based Webhook", value: "Textbased" as const, description: "Static text content webhook" },
+                          { label: "Text-based Webhook", value: "Textbased" as const, description: "Dynamic text content webhook" },
                         ].map((option) => (
                           <button
                             key={option.value}
