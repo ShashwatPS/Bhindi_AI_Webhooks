@@ -11,7 +11,6 @@ function getNestedValue(obj: Record<string, any>, path: string): unknown {
 }
 
 interface WebhookLifecycleRequest {
-  userId: string;
   triggerId: string;
   authToken: string;
   hookType: "Dynamic" | "Textbased";
@@ -24,9 +23,9 @@ export async function POST(req: Request) {
     const body: WebhookLifecycleRequest = await req.json();
     const { searchParams } = new URL(req.url);
     const triggerId = searchParams.get("triggerId");
-    const { userId, prompt, authToken } = body;
+    const { prompt, authToken } = body;
 
-    if (!userId || !triggerId || !authToken) {
+    if (!triggerId || !authToken) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

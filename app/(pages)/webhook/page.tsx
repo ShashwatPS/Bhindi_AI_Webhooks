@@ -38,6 +38,7 @@ const WebHooksPage = () => {
 
         setLoadingTriggers(true);
         const data = await getAllTriggers(id);
+        console.log("Data: ", data)
         //@ts-expect-error idk
         setTriggers(data);
       } catch (err) {

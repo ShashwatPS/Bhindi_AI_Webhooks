@@ -24,7 +24,7 @@ model trigger {
     type              typeOfTrigger
     title             String
     prompt            String
-    additionalContext Json[]
+    additionalContext Json
     createdAt         DateTime      @default(now())
     runs              triggerRun[]
 }

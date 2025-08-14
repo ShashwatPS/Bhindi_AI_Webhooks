@@ -72,7 +72,7 @@ export const getAllTriggers = async (userId: string) => {
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
-  
+      
       return triggers;
     } catch (error) {
       console.error(error);
