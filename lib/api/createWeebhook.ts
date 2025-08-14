@@ -101,6 +101,40 @@ export const getWebHookData = async (id: string) => {
   }
 };
 
+export async function getWebhookLogs(triggerId: string, limit = 50) {
+  try {
+    if (!triggerId) {
+      throw new Error("TriggerID not provided")
+    }
+
+    const trigger = await pClient.trigger.findFirst({
+      where: {
+        id: triggerId,
+      },
+    });
+
+    if (!trigger) {
+      return { success: false, error: 'Trigger not found or access denied' };
+    }
+
+    const runs = await pClient.triggerRun.findMany({
+      where: {
+        triggerId: triggerId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+    });
+
+    return runs
+
+  } catch (error) {
+    console.error('Error fetching webhook logs:', error);
+    throw new Error("Having trouble getting the logs");
+  }
+}
+
 
 export const getAllTriggers = async (userId: string) => {
     try {
