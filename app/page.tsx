@@ -15,8 +15,6 @@ export default function Home() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("This is the Email: ", email);
-    console.log("This is the password: ", password)
 
     try {
     const myHeaders = new Headers();

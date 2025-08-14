@@ -176,10 +176,6 @@ async function createWebhookExternal(title: string, instructions: string, additi
       payload.cronExpression = cronExpression;
     }
 
-    // console.log("Create Exterbal Webhook Payload: ", payload);
-    // console.log("Input Data: ", payload.input)
-    // console.log("Additional Data: ", payload.input.text)
-
     const response = await fetch(BASE_URL, {
       method: "POST",
       headers: createHeaders(true, authToken),
@@ -210,7 +206,6 @@ async function triggerWebhookExternal(webhookId: string, authToken : string) {
     }
 
     const result = await response.text();
-    console.log('Webhook triggered:', result);
     return result;
   } catch (error) {
     console.error('Error triggering webhook:', error);
@@ -230,7 +225,6 @@ async function deleteWebhookExternal(webhookId: string, authToken: string) {
     }
 
     const result = await response.text();
-    console.log('Webhook deleted:', result);
     return result;
   } catch (error) {
     console.error('Error deleting webhook:', error);
@@ -240,14 +234,8 @@ async function deleteWebhookExternal(webhookId: string, authToken: string) {
 
 export const webhookLifecycle = async(triggerId: string, authToken: string, prompt: string) => {
   try {
-    console.log('Starting webhook lifecycle...');
-
     const cronExpression = generateCronExpression();
-
-    console.log(`Generated cron expression: ${cronExpression}`);
-
     const triggerData = await getWebHook(triggerId);
-    console.log('Fetched trigger data:', triggerData);
 
     // const additionalContexts = (triggerData.additionalContext as { label:string, content: string }[])?.map((ctx) => ctx?.content) || [];
 
@@ -280,12 +268,9 @@ export const webhookLifecycle = async(triggerId: string, authToken: string, prom
     };
 
     const triggerRun = await createTriggerRun(triggerId, triggerRunMetadata);
-    console.log('Created trigger run record:', triggerRun);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     await deleteWebhookExternal(externalWebhookId, authToken);
-
-    console.log('Webhook lifecycle completed successfully!');
     
     return {
       triggerData,

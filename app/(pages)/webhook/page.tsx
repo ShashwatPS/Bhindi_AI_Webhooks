@@ -49,7 +49,6 @@ const WebHooksPage = () => {
 
         setLoadingTriggers(true);
         const data = await getAllTriggers(id);
-        console.log("Data: ", data)
         //@ts-expect-error idk
         setTriggers(data);
       } catch (err) {
@@ -144,7 +143,6 @@ const WebHooksPage = () => {
       </div>
 
       <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">All Webhooks</h2>
         {loadingTriggers ? (
           <p className="text-gray-400">Loading...</p>
         ) : triggers.length === 0 ? (

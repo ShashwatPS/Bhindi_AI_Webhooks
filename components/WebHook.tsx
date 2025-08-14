@@ -2,6 +2,7 @@ import getUserTokenFromCookies from '@/lib/cookies/getUserToken';
 import type { FC } from 'react';
 import { useState } from 'react';
 
+
 type Webhook = {
   id: string;
   title: string;
@@ -11,10 +12,12 @@ type Webhook = {
   createdAt: string;
 };
 
+
 type WebhookCardProps = {
   trigger: Webhook;
   onDelete: (id: string) => void; 
 };
+
 
 const ExpandIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
@@ -22,11 +25,13 @@ const ExpandIcon = () => (
   </svg>
 );
 
+
 const DeleteIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
     <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
   </svg>
 );
+
 
 const CloseIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
@@ -34,20 +39,24 @@ const CloseIcon = () => (
   </svg>
 );
 
+
 const PlayIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
     <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
   </svg>
 );
 
+
 const LoadingSpinner = () => (
   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#00d68f]"></div>
 );
+
 
 interface RunFormData {
   prompt?: string;
   [key: string]: string | undefined;
 }
+
 
 const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
   const { id, title, type, prompt, additionalContext, createdAt } = trigger;
@@ -57,12 +66,13 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRunModalOpen, setIsRunModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [runResult, setRunResult] = useState<any>(null);
+  const [runSuccess, setRunSuccess] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<RunFormData>({
     prompt: '',
   });
+
 
   const getTemplateVariables = () => {
     if (type === 'Dynamic' || !prompt) return [];
@@ -70,7 +80,26 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
     return [...new Set(matches.map(match => match.slice(2, -1).trim()))];
   };
 
+
   const templateVariables = getTemplateVariables();
+
+
+  // Helper function to set nested object properties from dot notation
+  const setNestedProperty = (obj: any, path: string, value: string) => {
+    const keys = path.split('.');
+    let current = obj;
+    
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      if (!(key in current) || typeof current[key] !== 'object') {
+        current[key] = {};
+      }
+      current = current[key];
+    }
+    
+    current[keys[keys.length - 1]] = value;
+  };
+
 
   const handleInputChange = (key: string, value: string) => {
     setFormData(prev => ({
@@ -79,15 +108,18 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
     }));
   };
 
+
   const handleRunWebhook = async () => {
     if (type === 'Dynamic' && !formData.prompt) {
       setRunError('Prompt is required for Dynamic hooks');
       return;
     }
 
+
     setIsLoading(true);
     setRunError(null);
-    setRunResult(null);
+    setRunSuccess(false);
+
 
     try {
       const authToken = await getUserTokenFromCookies();
@@ -95,15 +127,24 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
         authToken: authToken
       };
 
+
       if (type === 'Dynamic') {
         payload.prompt = formData.prompt;
-      } else {
+      } else if (type === 'Textbased') {
+        // Build nested object structure for template variables
         templateVariables.forEach(variable => {
           if (formData[variable]) {
-            payload[variable] = formData[variable];
+            if (variable.includes('.')) {
+              // Handle nested properties like "number.value"
+              setNestedProperty(payload, variable, formData[variable]);
+            } else {
+              // Handle flat properties
+              payload[variable] = formData[variable];
+            }
           }
         });
       }
+
 
       const response = await fetch(`/api/webhook-lifecycle?triggerId=${id}`, {
         method: 'POST',
@@ -113,13 +154,16 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
         body: JSON.stringify(payload),
       });
 
+
       const result = await response.json();
+
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to run webhook');
       }
 
-      setRunResult(result);
+
+      setRunSuccess(true);
     } catch (error) {
       setRunError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
@@ -127,24 +171,28 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
     }
   };
 
+
   const resetRunModal = () => {
     setFormData({
       prompt: '',
     });
-    setRunResult(null);
+    setRunSuccess(false);
     setRunError(null);
     setIsLoading(false);
   };
+
 
   const openRunModal = () => {
     resetRunModal();
     setIsRunModalOpen(true);
   };
 
+
   const closeRunModal = () => {
     setIsRunModalOpen(false);
     resetRunModal();
   };
+
 
   return (
     <>
@@ -223,6 +271,7 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
           )}
         </div>
       </div>
+
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
@@ -313,10 +362,10 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
         </div>
       )}
 
-      {/* Run Webhook Modal */}
+
       {isRunModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-md">
-          <div className="bg-gradient-to-br from-[#1a1a1c] to-[#16161a] rounded-3xl border border-[#2a2a2e]/60 max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl shadow-black/40 overflow-hidden">
+          <div className="bg-gradient-to-br from-[#1a1a1c] to-[#16161a] rounded-3xl border border-[#2a2a2e]/60 max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl shadow-black/40 overflow-hidden">
             <div className="flex justify-between items-start gap-4 p-8 border-b border-[#2a2a2e]/40">
               <div className="flex-1 min-w-0">
                 <h2 className="text-2xl font-bold text-[#f8fafc] mb-2 break-words leading-tight">
@@ -326,7 +375,7 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-[#00d68f]/15 text-[#00d68f] border border-[#00d68f]/20">
                     {type}
                   </span>
-                  <p className="text-sm text-[#9ca3af]">Test your webhook with custom payload</p>
+                  <p className="text-sm text-[#9ca3af]">Test your webhook with custom values</p>
                 </div>
               </div>
               <div className="relative">
@@ -341,121 +390,104 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
             </div>
             
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  {(type === 'Dynamic' || (type === 'Textbased' && templateVariables.length > 0)) && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
-                        <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
-                        {type === 'Dynamic' ? 'Prompt' : 'Template Variables'}
-                      </h3>
-                      <div className="space-y-4">
-                        {type === 'Dynamic' && (
-                          <div>
-                            <label className="block text-sm font-medium text-[#d1d5db] mb-2">
-                              Prompt *
-                            </label>
-                            <textarea
-                              value={formData.prompt}
-                              onChange={(e) => handleInputChange('prompt', e.target.value)}
-                              rows={4}
-                              className="w-full px-4 py-3 bg-[#1e1e20]/80 border border-[#2a2a2e]/60 rounded-lg text-[#f8fafc] placeholder-[#9ca3af] focus:outline-none focus:border-[#00d68f]/50 focus:ring-1 focus:ring-[#00d68f]/50 transition-all duration-200 resize-none"
-                              placeholder="Enter your prompt for this dynamic webhook"
-                            />
-                          </div>
-                        )}
-
-                        {type === 'Textbased' && templateVariables.map((variable) => (
-                          <div key={variable}>
-                            <label className="block text-sm font-medium text-[#d1d5db] mb-2">
-                              {variable}
-                            </label>
-                            <input
-                              type="text"
-                              value={formData[variable] || ''}
-                              onChange={(e) => handleInputChange(variable, e.target.value)}
-                              className="w-full px-4 py-3 bg-[#1e1e20]/80 border border-[#2a2a2e]/60 rounded-lg text-[#f8fafc] placeholder-[#9ca3af] focus:outline-none focus:border-[#00d68f]/50 focus:ring-1 focus:ring-[#00d68f]/50 transition-all duration-200"
-                              placeholder={`Enter value for ${variable}`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {runError && (
-                    <div className="bg-[#f87171]/10 border border-[#f87171]/20 rounded-lg p-4">
-                      <p className="text-[#f87171] text-sm">{runError}</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleRunWebhook}
-                      disabled={isLoading}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00d68f] to-[#00c578] text-black rounded-xl hover:from-[#00c578] hover:to-[#00b569] transition-all duration-200 font-medium shadow-lg shadow-[#00d68f]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoading ? (
-                        <>
-                          <LoadingSpinner />
-                          Running...
-                        </>
-                      ) : (
-                        <>
-                          <PlayIcon />
-                          Run Webhook
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={closeRunModal}
-                      className="px-6 py-3 bg-[#2a2a2e]/80 border border-[#3a3a3e]/60 text-[#d1d5db] rounded-xl hover:bg-[#3a3a3e] transition-all duration-200 font-medium"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-
-                {/* Result Section */}
-                <div className="space-y-6">
+              <div className="space-y-6">
+                {type === 'Dynamic' && (
                   <div>
                     <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
                       <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
-                      Response
+                      Prompt
                     </h3>
-                    <div className="bg-[#1e1e20]/80 rounded-xl p-6 border border-[#2a2a2e]/40 min-h-[300px]">
-                      {runResult ? (
-                        <div>
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="w-2 h-2 bg-[#00d68f] rounded-full"></div>
-                            <span className="text-[#00d68f] text-sm font-medium">Success</span>
-                          </div>
-                          <pre className="text-[#d1d5db] text-sm overflow-auto whitespace-pre-wrap break-words">
-                            {JSON.stringify(runResult, null, 2)}
-                          </pre>
-                        </div>
-                      ) : runError ? (
-                        <div>
-                          <div className="flex items-center gap-2 mb-4">
-                            <div className="w-2 h-2 bg-[#f87171] rounded-full"></div>
-                            <span className="text-[#f87171] text-sm font-medium">Error</span>
-                          </div>
-                          <p className="text-[#f87171] text-sm">{runError}</p>
-                        </div>
-                      ) : isLoading ? (
-                        <div className="flex items-center justify-center h-full">
-                          <div className="flex items-center gap-3">
-                            <LoadingSpinner />
-                            <span className="text-[#9ca3af] text-sm">Running webhook...</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <p className="text-[#9ca3af] text-sm">Response will appear here after running the webhook</p>
-                        </div>
-                      )}
+                    <div>
+                      <label className="block text-sm font-medium text-[#d1d5db] mb-2">
+                        Prompt *
+                      </label>
+                      <textarea
+                        value={formData.prompt}
+                        onChange={(e) => handleInputChange('prompt', e.target.value)}
+                        rows={4}
+                        className="w-full px-4 py-3 bg-[#1e1e20]/80 border border-[#2a2a2e]/60 rounded-lg text-[#f8fafc] placeholder-[#9ca3af] focus:outline-none focus:border-[#00d68f]/50 focus:ring-1 focus:ring-[#00d68f]/50 transition-all duration-200 resize-none"
+                        placeholder="Enter your prompt for this dynamic webhook"
+                      />
                     </div>
                   </div>
+                )}
+
+
+                {type === 'Textbased' && templateVariables.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#00d68f] mb-4 uppercase tracking-wide flex items-center gap-2">
+                      <div className="w-1 h-4 bg-[#00d68f] rounded-full"></div>
+                      Template Variables
+                    </h3>
+                    <div className="space-y-4">
+                      {templateVariables.map((variable) => (
+                        <div key={variable}>
+                          <label className="block text-sm font-medium text-[#d1d5db] mb-2">
+                            {variable}
+                            {variable.includes('.') && (
+                              <span className="text-xs text-[#9ca3af] ml-2">
+                                (nested: {variable.split('.').join(' → ')})
+                              </span>
+                            )}
+                          </label>
+                          <input
+                            type="text"
+                            value={formData[variable] || ''}
+                            onChange={(e) => handleInputChange(variable, e.target.value)}
+                            className="w-full px-4 py-3 bg-[#1e1e20]/80 border border-[#2a2a2e]/60 rounded-lg text-[#f8fafc] placeholder-[#9ca3af] focus:outline-none focus:border-[#00d68f]/50 focus:ring-1 focus:ring-[#00d68f]/50 transition-all duration-200"
+                            placeholder={`Enter value for ${variable}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+
+                {runSuccess && (
+                  <div className="bg-[#00d68f]/10 border border-[#00d68f]/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-[#00d68f] rounded-full"></div>
+                      <p className="text-[#00d68f] text-sm font-medium">Webhook executed successfully!</p>
+                    </div>
+                  </div>
+                )}
+
+
+                {runError && (
+                  <div className="bg-[#f87171]/10 border border-[#f87171]/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-[#f87171] rounded-full"></div>
+                      <p className="text-[#f87171] text-sm font-medium">Error: {runError}</p>
+                    </div>
+                  </div>
+                )}
+
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleRunWebhook}
+                    disabled={isLoading}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00d68f] to-[#00c578] text-black rounded-xl hover:from-[#00c578] hover:to-[#00b569] transition-all duration-200 font-medium shadow-lg shadow-[#00d68f]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <LoadingSpinner />
+                        Running...
+                      </>
+                    ) : (
+                      <>
+                        <PlayIcon />
+                        Run Webhook
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={closeRunModal}
+                    className="px-6 py-3 bg-[#2a2a2e]/80 border border-[#3a3a3e]/60 text-[#d1d5db] rounded-xl hover:bg-[#3a3a3e] transition-all duration-200 font-medium"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>
@@ -465,5 +497,6 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
     </>
   );
 };
+
 
 export default WebhookCard;
