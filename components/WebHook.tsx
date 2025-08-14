@@ -340,9 +340,9 @@ const WebhookCard: FC<WebhookCardProps> = ({ trigger, onDelete }) => {
                 </h3>
                 <div className="bg-[#1e1e20]/80 rounded-xl p-6 border border-[#2a2a2e]/40 overflow-hidden">
                   <div>
-                    <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Webhook ID</p>
+                    <p className="text-xs text-[#9ca3af] mb-2 uppercase tracking-wide">Webhook URL</p>
                     <p className="text-[#f8fafc] font-mono text-sm bg-[#0a0a0a]/50 p-3 rounded-lg border border-[#2a2a2e]/40 overflow-hidden break-all">
-                      {id}
+                      {`${window.location.origin}`+id}
                     </p>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { createWebHook, getAllTriggers, deleteWebHook } from "@/lib/api/createWe
 import getUserIdFromCookies from "@/lib/cookies/getUserIdCookie";
 import WebhookCard from "@/components/WebHook";
 import { toast } from "sonner";
+import deleteUserTokenFromCookies from "@/lib/cookies/deleteUserToken"
 
 type AdditionalContextItem = { label: string; content: string };
 type Webhook = {
@@ -32,13 +33,23 @@ const WebHooksPage = () => {
 
   const onDelete = async (triggerId: string) => {
     try {
-    await deleteWebHook(triggerId)
-    setTriggers(triggers.filter(({id})=>(id !== triggerId)))
-    toast.message("Webhook Deleted Succesfully")
+      await deleteWebHook(triggerId);
+      setTriggers(triggers.filter(({ id }) => (id !== triggerId)));
+      toast.message("Webhook Deleted Successfully");
     } catch (error) {
-      toast.error(error)
+      toast.error(error);
     }
-  }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await deleteUserTokenFromCookies();
+      toast.message("Logged out successfully");
+      window.location.href = "/";
+    } catch (error) {
+      toast.error("Error logging out");
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -133,13 +144,26 @@ const WebHooksPage = () => {
     <div className="h-screen bg-[#1c1c1e] text-white font-sans flex flex-col">
       <div className="flex items-center justify-between border-b border-[#2f2f31] px-4 sm:px-6 py-3 sm:py-4 bg-[#1c1c1e]/80">
         <h1 className="text-xl sm:text-2xl font-semibold">Webhooks</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-[#00c584] hover:bg-[#00a870] text-white font-semibold py-2 px-3 sm:px-5 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 text-sm sm:text-base"
-        >
-          <span className="hidden sm:inline">+ Create Webhook</span>
-          <span className="sm:hidden">+ Create</span>
-        </button>
+        
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-[#00c584] hover:bg-[#00a870] text-white font-semibold py-2 px-3 sm:px-5 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 text-sm sm:text-base"
+          >
+            <span className="hidden sm:inline">+ Create Webhook</span>
+            <span className="sm:hidden">+ Create</span>
+          </button>
+          
+          <button
+            onClick={async() => await handleLogout()}
+            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 sm:px-5 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105 text-sm sm:text-base flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="hidden sm:inline">Logout</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
@@ -156,11 +180,9 @@ const WebHooksPage = () => {
         )}
       </div>
 
-      {/* Enhanced Modal - Mobile Optimized */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50 backdrop-blur-sm p-3 sm:p-4">
           <div className="bg-gradient-to-br from-[#2c2c2e] to-[#1e1e20] rounded-xl sm:rounded-2xl w-full max-w-2xl sm:max-w-3xl shadow-2xl border border-[#3a3a3c]/50 animate-in fade-in zoom-in duration-300 max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
-            {/* Header - More Compact */}
             <div className="bg-gradient-to-r from-[#00c584]/10 to-transparent p-4 sm:p-6 border-b border-[#3a3a3c]/30 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div>
