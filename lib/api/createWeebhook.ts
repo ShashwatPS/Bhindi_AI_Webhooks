@@ -100,6 +100,8 @@ function createHeaders(includeContentType = false, authToken: string) {
   headers.append("accept", "application/json");
   headers.append("authorization", `Bearer ${authToken}`);
   headers.append("x-timezone", "Asia/Calcutta");
+  headers.append("origin", "https://bhindi.io");
+  headers.append("referer", "https://bhindi.io/");
   
   if (includeContentType) {
     headers.append("content-type", "application/json");
@@ -111,33 +113,35 @@ function createHeaders(includeContentType = false, authToken: string) {
 
 function generateCronExpression(): string {
   const now = new Date();
-  
-  const targetTime = new Date(now.getTime() + 60 * 60 * 1000);
-  
+
+  const targetTime = new Date(now.getTime() + 60 * 60 * 1000); 
+
   const minutes = targetTime.getMinutes();
   const roundedMinutes = Math.ceil(minutes / 5) * 5;
-  
+
   if (roundedMinutes >= 60) {
     targetTime.setHours(targetTime.getHours() + 1);
     targetTime.setMinutes(0);
   } else {
     targetTime.setMinutes(roundedMinutes);
   }
-  
+
+  const second = 0;
   const minute = targetTime.getMinutes();
   const hour = targetTime.getHours();
   const day = targetTime.getDate();
   const month = targetTime.getMonth() + 1;
-  
-  return `${minute} ${hour} ${day} ${month} *`;
+  const weekday = "*";
+
+  return `${second} ${minute} ${hour} ${day} ${month} ${weekday}`;
 }
 
-async function createWebhookExternal(title: string, instructions: string, additionalContexts: string[] = [], cronExpression: string | null = null, recurring = false, authToken: string) {
+async function createWebhookExternal(title: string, instructions: string, additionalContexts: { label:string, content: string }[] = [], cronExpression: string | null = null, authToken: string) {
   try {
     const payload: {
       title: string;
       input: { text: { label: string; content: string }[] };
-      recurring: boolean;
+      recurring: string;
       cronExpression?: string;
     } = {
       title,
@@ -147,18 +151,22 @@ async function createWebhookExternal(title: string, instructions: string, additi
             label: "Instructions",
             content: instructions
           },
-          ...additionalContexts.map(context => ({
-            label: "Additional Context",
-            content: context
+          ...additionalContexts.map(({ label, content }) => ({
+            "label": label,
+            "content": content
           }))
         ]
       },
-      recurring
+      recurring : "false"
     };
 
     if (cronExpression) {
       payload.cronExpression = cronExpression;
     }
+
+    // console.log("Create Exterbal Webhook Payload: ", payload);
+    // console.log("Input Data: ", payload.input)
+    // console.log("Additional Data: ", payload.input.text)
 
     const response = await fetch(BASE_URL, {
       method: "POST",
@@ -171,7 +179,6 @@ async function createWebhookExternal(title: string, instructions: string, additi
     }
 
     const result = await response.json();
-    console.log('External webhook created:', result);
     return result;
   } catch (error) {
     console.error('Error creating external webhook:', error);
@@ -224,25 +231,23 @@ export const webhookLifecycle = async(triggerId: string, authToken: string, prom
     console.log('Starting webhook lifecycle...');
 
     const cronExpression = generateCronExpression();
-    const recurring = false; 
 
     console.log(`Generated cron expression: ${cronExpression}`);
 
     const triggerData = await getWebHook(triggerId);
     console.log('Fetched trigger data:', triggerData);
 
-    const additionalContexts = (triggerData.additionalContext as { label:string, content: string }[])?.map((ctx) => ctx?.content) || [];
+    // const additionalContexts = (triggerData.additionalContext as { label:string, content: string }[])?.map((ctx) => ctx?.content) || [];
 
     const externalWebhook = await createWebhookExternal(
       triggerData.title,
-      triggerData.prompt,
-      additionalContexts,
+      prompt,
+      triggerData.additionalContext as { label:string, content: string }[],
       cronExpression,
-      recurring,
       authToken
     );
 
-    const externalWebhookId = externalWebhook.id || externalWebhook._id;
+    const externalWebhookId = externalWebhook.data.schedule.scheduleId;
 
     if (!externalWebhookId) {
       throw new Error('External webhook ID not found in response');
