@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { createWebHook, getAllTriggers, deleteWebHook } from "@/lib/api/createWeebhook";
+import { createWebHook, getAllTriggers, deleteWebHook, updateWebHook } from "@/lib/api/createWeebhook";
 import getUserIdFromCookies from "@/lib/cookies/getUserIdCookie";
 import WebhookCard from "@/components/WebHook";
 import { toast } from "sonner";

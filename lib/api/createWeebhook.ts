@@ -31,6 +31,30 @@ export const createWebHook = async (
     }
 };
 
+export const updateWebHook = async (
+  id: string,
+  title: string,
+  prompt: string,
+  additionalContext: { label: string; content: string }[],
+  type: typeOfTrigger
+) => {
+  try {
+    const updatedTrigger = await pClient.trigger.update({
+      where: { id },
+      data: {
+        title,
+        prompt,
+        additionalContext,
+        type,
+      },
+    });
+    return updatedTrigger;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Having trouble updating the webhook");
+  }
+};
+
 export const deleteWebHook = async (id: string) => {
   try {
     const deletedTrigger = await pClient.trigger.delete({
